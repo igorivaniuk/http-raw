@@ -14,27 +14,44 @@ server.listen(0);
 var port = server.address().port;
 
 test('leak test', function (t) {
-    t.plan(51);
+    t.plan(101);
     
     function get50 (cb) {
         var pending = 50;
         for (var i = 0; i < 50; i++) {
             sendGET(function (eq) {
-                t.ok(eq)
+                t.ok(eq, 'expected GET response');
                 if (--pending === 0) cb();
             });
         }
     }
     
-    get50(function () {
-        var baseline = process.memoryUsage().heapUsed;
-        
-        get50(function () {
-            t.ok(
-                process.memoryUsage().heapUsed / baseline > 1.1,
-                'leak detected'
-            );
+    function raw50 (cb) {
+        var pending = 50;
+        for (var i = 0; i < 50; i++) {
+            sendPOST(function (eq) {
+                t.ok(eq, 'expected POST response');
+                if (--pending === 0) cb();
+            });
+        }
+    }
+    
+    function compareBaseline (fn, cb) {
+        fn(function () {
+            var baseline = process.memoryUsage().heapUsed;
+            
+            fn(function () {
+                t.ok(
+                    process.memoryUsage().heapUsed / baseline > 1.1,
+                    'acceptable heap growth'
+                );
+                if (cb) cb();
+            });
         });
+    }
+    
+    compareBaseline(get50, function () {
+        //compareBaseline(raw50);
     });
     
     t.on('end', function () {
