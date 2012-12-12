@@ -8,12 +8,12 @@ module.exports = function (cb) {
 };
 
 function onconnection (c) {
-    var ondata = c.ondata;
     var buffers = [];
     
+    var ondata = c.ondata;
     c.ondata = function (buf, start, end) {
         buffers.push([ buf, start, end ]);
-        ondata.apply(this, arguments);
+        return ondata.apply(this, arguments);
     };
     
     var onHeadersComplete = c.parser.onHeadersComplete;
@@ -42,16 +42,9 @@ function onconnection (c) {
             
             incoming.upgradeOrConnect = true;
             incoming.upgrade = true;
+            incoming.shouldKeepAlive = true;
             
-            var s = new Stream;
-            s.readable = true;
-            
-            incoming.on('data', s.emit.bind(s, 'data'));
-            incoming.on('end', s.emit.bind(s, 'end'));
-            incoming.on('close', s.emit.bind(s, 'close'));
-            incoming.on('error', s.emit.bind(s, 'error'));
-            
-            return s;
+            return incoming.connection;
         };
         
         onIncoming.apply(this, arguments);

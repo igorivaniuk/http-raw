@@ -5,9 +5,11 @@ var server = createServer(function (req, res) {
         res.end('beep boop\n');
     }
     else {
-        var s = req.createRawStream();
-        s.pipe(process.stdout, { end : false });
-        s.on('end', function () { res.end('ok\n') });
+        var rs = req.createRawStream();
+        rs.pipe(process.stdout, { end : false });
+        
+        var bs = req.createRawBodyStream();
+        bs.pipe(bs);
     }
 });
 server.listen(7000);

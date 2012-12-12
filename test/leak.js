@@ -14,7 +14,7 @@ server.listen(0);
 var port = server.address().port;
 
 test('leak test', function (t) {
-    t.plan(101);
+    t.plan(101 + 101);
     
     function get50 (cb) {
         var pending = 50;
@@ -51,7 +51,7 @@ test('leak test', function (t) {
     }
     
     compareBaseline(get50, function () {
-        //compareBaseline(raw50);
+        compareBaseline(raw50);
     });
     
     t.on('end', function () {
@@ -83,7 +83,10 @@ function sendPOST (cb) {
     };
     var req = http.request(opts, function (res) {
         var data = '';
-        res.on('data', function (buf) { data += buf });
+        res.on('data', function (buf) {
+            console.dir(String(buf));
+            data += buf
+        });
         res.on('end', function () {
             cb(null,
                 data.split('\n')[0] === 'GET / HTTP/1.1\r\n'
