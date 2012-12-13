@@ -69,6 +69,7 @@ function onconnection (c) {
         onIncoming.apply(this, arguments);
         
         process.nextTick(function () {
+            c.ondata = ondata;
             buffers = undefined;
         });
     };
