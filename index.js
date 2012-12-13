@@ -61,7 +61,7 @@ function onconnection (c) {
             c.on('drain', function () { s.emit('drain') });
             c.on('end', function () { s.emit('end') });
             c.on('close', function () { s.emit('close') });
-            c.on('error', function (err) { s.emit('error', err) });
+            c.on('error', function (err) { s.emit('close') });
             c.on('data', function (buf) { s.emit('data', buf) });
             
             return s;
