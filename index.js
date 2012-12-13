@@ -18,14 +18,21 @@ function onconnection (c) {
         return ondata.apply(this, arguments);
     };
     
-    var gotHeaders = false;
+    var onend = c.onend;
+    c.onend = function () {
+        buffers = undefined;
+        onend.apply(this, arguments);
+    };
     
+    //var gotHeaders = false;
+    /*
     var onHeadersComplete = c.parser.onHeadersComplete;
     c.parser.onHeadersComplete = function () {
         onHeadersComplete.apply(this, arguments);
-        c.ondata = ondata;
-        gotHeaders = true;
+        //c.ondata = ondata;
+        //gotHeaders = true;
     };
+    */
     
     var onIncoming = c.parser.onIncoming;
     c.parser.onIncoming = function (incoming) {
@@ -64,10 +71,8 @@ function onconnection (c) {
             c.on('end', function () { s.emit('end') });
             c.on('close', function () { s.emit('close') });
             c.on('error', function () { s.emit('error') });
+            c.on('data', function (buf) { s.emit('data', buf) });
             
-            c.on('data', function (buf) {
-                if (gotHeaders) s.emit('data', buf);
-            });
             return s;
         };
         
