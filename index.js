@@ -10,23 +10,23 @@ exports = module.exports = function (cb) {
 
 exports.onconnection = onconnection;
 
-function onconnection (c) {
+function onconnection (con) {
     var buffers = [];
     
-    var ondata = c.ondata;
-    c.ondata = function (buf, start, end) {
+    var ondata = con.ondata;
+    con.ondata = function (buf, start, end) {
         buffers.push([ buf, start, end ]);
         return ondata.apply(this, arguments);
     };
     
-    var onend = c.onend;
-    c.onend = function () {
+    var onend = con.onend;
+    con.onend = function () {
         buffers = undefined;
         onend.apply(this, arguments);
     };
     
-    var onIncoming = c.parser.onIncoming;
-    c.parser.onIncoming = function (incoming) {
+    var onIncoming = con.parser.onIncoming;
+    con.parser.onIncoming = function (incoming) {
         incoming.createRawStream = function () {
             var bufs = buffers;
             var s = incoming.createRawBodyStream();
@@ -43,6 +43,9 @@ function onconnection (c) {
         };
         
         incoming.createRawBodyStream = function () {
+            con.parser.onerror = function () {};
+            con.ondata = function () {};
+            
             incoming.upgradeOrConnect = true;
             incoming.upgrade = true;
             incoming.shouldKeepAlive = true;
@@ -70,7 +73,6 @@ function onconnection (c) {
         onIncoming.apply(this, arguments);
         
         process.nextTick(function () {
-            c.ondata = ondata;
             buffers = undefined;
         });
     };
