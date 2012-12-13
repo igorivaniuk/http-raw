@@ -5,7 +5,7 @@ var net = require('net');
 
 var server = createServer(function (req, res) {
     if (req.method === 'GET') {
-        res.end('beep boop\n');
+        res.end('beep boop');
     }
     else {
         var rs = req.createRawStream();
@@ -29,8 +29,27 @@ server.on('listening', function () {
 });
 
 function getTest (t) {
-    t.plan(1);
-    t.pass();
+    t.plan(2);
+    
+    var c = net.connect(port);
+    var data = '';
+    c.on('data', function (buf) { data += buf });
+    
+    c.on('end', function () {
+        var lines = data.split(/\r?\n/);
+        t.equal(lines[0], 'HTTP/1.1 200 OK');
+        t.ok(lines.some(function (line) {
+            return line === 'beep boop'
+        }));
+    });
+    
+    c.write([
+        'GET / HTTP/1.1',
+        'Host: beep.boop',
+        '',
+        ''
+    ].join('\r\n'));
+    c.end();
 }
 
 function putTest (t) {
