@@ -29,7 +29,7 @@ server.on('listening', function () {
 });
 
 function getTest (t) {
-    t.plan(2);
+    t.plan(3);
     
     var c = net.connect(port);
     var data = '';
@@ -40,6 +40,9 @@ function getTest (t) {
         t.equal(lines[0], 'HTTP/1.1 200 OK');
         t.ok(lines.some(function (line) {
             return line === 'beep boop'
+        }));
+        t.ok(lines.some(function (line) {
+            return /^transfer-encoding:\s*chunked\s*$/i.test(line);
         }));
     });
     
