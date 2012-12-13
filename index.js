@@ -1,5 +1,6 @@
 var http = require('http');
 var Stream = require('stream');
+var duplex = require('duplex');
 
 module.exports = function (cb) {
     var server = http.createServer(cb);
@@ -17,10 +18,13 @@ function onconnection (c) {
         return ondata.apply(this, arguments);
     };
     
+    var gotHeaders = false;
+    
     var onHeadersComplete = c.parser.onHeadersComplete;
     c.parser.onHeadersComplete = function () {
         onHeadersComplete.apply(this, arguments);
         c.ondata = ondata;
+        gotHeaders = true;
     };
     
     var onIncoming = c.parser.onIncoming;
@@ -49,7 +53,22 @@ function onconnection (c) {
             incoming.upgrade = true;
             incoming.shouldKeepAlive = true;
             
-            return incoming.connection;
+            var s = new Stream;
+            s.writable = true;
+            s.readable = true;
+            
+            var c = incoming.connection;
+            s.write = c.write.bind(c);
+            s.end = c.end.bind(c);
+            s.destroy = c.destroy.bind(c);
+            s.pause = c.pause.bind(c);
+            s.resume = c.resume.bind(c);
+            c.on('drain', function () { s.emit('drain') });
+            
+            c.on('data', function (buf) {
+                if (gotHeaders) s.emit('data', buf);
+            });
+            return s;
         };
         
         onIncoming.apply(this, arguments);
