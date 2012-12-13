@@ -24,16 +24,6 @@ function onconnection (c) {
         onend.apply(this, arguments);
     };
     
-    //var gotHeaders = false;
-    /*
-    var onHeadersComplete = c.parser.onHeadersComplete;
-    c.parser.onHeadersComplete = function () {
-        onHeadersComplete.apply(this, arguments);
-        //c.ondata = ondata;
-        //gotHeaders = true;
-    };
-    */
-    
     var onIncoming = c.parser.onIncoming;
     c.parser.onIncoming = function (incoming) {
         incoming.createRawStream = function () {
