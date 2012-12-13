@@ -65,6 +65,7 @@ function putTest (t) {
     c.write([
         'PUT / HTTP/1.1',
         'Host: beep.boop',
+        'Upgrade: true',
         '',
         ''
     ].join('\r\n') + 'abc\ndef\nh\n');
