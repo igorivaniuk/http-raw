@@ -63,7 +63,11 @@ function onconnection (c) {
             s.destroy = c.destroy.bind(c);
             s.pause = c.pause.bind(c);
             s.resume = c.resume.bind(c);
+            
             c.on('drain', function () { s.emit('drain') });
+            c.on('end', function () { s.emit('end') });
+            c.on('close', function () { s.emit('close') });
+            c.on('error', function () { s.emit('error') });
             
             c.on('data', function (buf) {
                 if (gotHeaders) s.emit('data', buf);
