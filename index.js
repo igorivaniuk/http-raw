@@ -45,10 +45,6 @@ function onconnection (c) {
         };
         
         incoming.createRawBodyStream = function () {
-            process.nextTick(function () {
-                buffers = undefined;
-            });
-            
             incoming.upgradeOrConnect = true;
             incoming.upgrade = true;
             incoming.shouldKeepAlive = true;
@@ -76,5 +72,9 @@ function onconnection (c) {
         };
         
         onIncoming.apply(this, arguments);
+        
+        process.nextTick(function () {
+            buffers = undefined;
+        });
     };
 }
