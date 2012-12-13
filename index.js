@@ -22,14 +22,18 @@ function onconnection (con) {
     var onend = con.onend;
     con.onend = function () {
         buffers = undefined;
-        onend.apply(this, arguments);
+        if (!upgraded) return onend.apply(this, arguments);
     };
+    
+    var upgraded = false;
     
     var onIncoming = con.parser.onIncoming;
     con.parser.onIncoming = function (incoming) {
         incoming.createRawStream = function () {
+            upgraded = true;
+            
             var bufs = buffers;
-            var s = incoming.createRawBodyStream();
+            var s = createStream();
             
             process.nextTick(function () {
                 for (var i = 0; i < bufs.length; i++) {
@@ -43,8 +47,32 @@ function onconnection (con) {
         };
         
         incoming.createRawBodyStream = function () {
+            upgraded = true;
+            
+            var bufs = buffers;
+            process.nextTick(function () {
+                var b = bufs[bufs.length-1];
+                var slag = String(b[0].slice(b[1],b[2]))
+                    .split(/\r\n\r\n|\n\n/)
+                ;
+                s.emit('data', Buffer(slag[slag.length-1]));
+            });
+            
+            var s = createStream();
+            return s;
+        };
+        
+        onIncoming.apply(this, arguments);
+        
+        process.nextTick(function () {
+            buffers = undefined;
+        });
+        
+        function createStream () {
             con.parser.onerror = function () {};
-            con.ondata = function () {};
+            con.ondata = function (buf, start, end) {
+                s.emit('data', buf.slice(start, end));
+            };
             
             incoming.upgradeOrConnect = true;
             incoming.upgrade = true;
@@ -55,6 +83,7 @@ function onconnection (con) {
             s.readable = true;
             
             var c = incoming.connection;
+            
             s.write = c.write.bind(c);
             s.end = c.end.bind(c);
             s.destroy = c.destroy.bind(c);
@@ -64,16 +93,11 @@ function onconnection (con) {
             c.on('drain', function () { s.emit('drain') });
             c.on('end', function () { s.emit('end') });
             c.on('close', function () { s.emit('close') });
-            c.on('error', function (err) { s.emit('close') });
+            
+            c.on('error', function (err) {});
             c.on('data', function (buf) { s.emit('data', buf) });
             
             return s;
-        };
-        
-        onIncoming.apply(this, arguments);
-        
-        process.nextTick(function () {
-            buffers = undefined;
-        });
+        }
     };
 }
