@@ -1,12 +1,14 @@
 var http = require('http');
 var Stream = require('stream');
 
-module.exports = function (cb) {
+exports = module.exports = function (cb) {
     var server = http.createServer(cb);
     server.on('connection', onconnection);
     server.on('upgrade', function () {});
     return server;
 };
+
+exports.onconnection = onconnection;
 
 function onconnection (c) {
     var buffers = [];
