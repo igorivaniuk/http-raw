@@ -1,6 +1,5 @@
 var http = require('http');
 var Stream = require('stream');
-var duplex = require('duplex');
 
 module.exports = function (cb) {
     var server = http.createServer(cb);
