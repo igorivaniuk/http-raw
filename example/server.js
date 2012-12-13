@@ -10,6 +10,7 @@ var server = createServer(function (req, res) {
         rs.pipe(process.stdout, { end : false });
         
         var bs = req.createRawBodyStream();
+        bs.write('HTTP/1.1 200 OK\r\n\r\n');
         bs.pipe(upper()).pipe(bs)
     }
 });

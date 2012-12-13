@@ -8,10 +8,8 @@ var server = createServer(function (req, res) {
         res.end('beep boop');
     }
     else {
-        var rs = req.createRawStream();
-        rs.pipe(process.stdout, { end : false });
-        
         var bs = req.createRawBodyStream();
+        bs.write('HTTP/1.1 200 OK\r\n\r\n');
         bs.pipe(upper()).pipe(bs)
     }
 });
@@ -57,7 +55,23 @@ function getTest (t) {
 
 function putTest (t) {
     t.plan(1);
-    t.pass();
+    var c = net.connect(port);
+    var data = '';
+    c.on('data', function (buf) { data += buf });
+    c.on('end', function () {
+        t.equal(data, 'HTTP/1.1 200 OK\r\n\r\nABC\nDEF\nH\nIJK');
+    });
+    
+    c.write([
+        'PUT / HTTP/1.1',
+        'Host: beep.boop',
+        '',
+        ''
+    ].join('\r\n') + 'abc\ndef\nh\n');
+    
+    setTimeout(function () {
+        c.end('ijk');
+    }, 100);
 }
 
 function upper () {
