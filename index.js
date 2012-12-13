@@ -4,6 +4,7 @@ var Stream = require('stream');
 module.exports = function (cb) {
     var server = http.createServer(cb);
     server.on('connection', onconnection);
+    server.on('upgrade', function () {});
     return server;
 };
 
@@ -29,16 +30,20 @@ function onconnection (c) {
             var s = incoming.createRawBodyStream();
             
             process.nextTick(function () {
-                bufs.forEach(function (b) {
+                for (var i = 0; i < bufs.length; i++) {
+                    var b = bufs[i];
                     s.emit('data', b[0].slice(b[1], b[2]));
-                });
+                }
+                bufs = undefined;
             });
             
             return s;
         };
         
         incoming.createRawBodyStream = function () {
-            buffers = undefined;
+            process.nextTick(function () {
+                buffers = undefined;
+            });
             
             incoming.upgradeOrConnect = true;
             incoming.upgrade = true;
