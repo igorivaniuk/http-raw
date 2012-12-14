@@ -4,7 +4,9 @@ var Stream = require('stream');
 exports = module.exports = function (cb) {
     var server = http.createServer(cb);
     server.on('connection', onconnection);
-    server.on('upgrade', function () {});
+    server.on('upgrade', function (req, sock, buf) {
+        console.dir(String(buf));
+    });
     return server;
 };
 
@@ -29,6 +31,7 @@ function onconnection (con) {
     
     var onIncoming = con.parser.onIncoming;
     con.parser.onIncoming = function (incoming) {
+console.log('INCOMING'); 
         incoming.createRawStream = function () {
             upgraded = true;
             
