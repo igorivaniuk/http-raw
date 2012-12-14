@@ -38,7 +38,9 @@ function onconnection (con) {
             process.nextTick(function () {
                 for (var i = 0; i < bufs.length; i++) {
                     var b = bufs[i];
-                    s.emit('data', b[0].slice(b[1], b[2]));
+                    if (b[1] - b[2] > 0) {
+                        s.emit('data', b[0].slice(b[1], b[2]));
+                    }
                 }
                 bufs = undefined;
             });
@@ -55,7 +57,12 @@ function onconnection (con) {
                 var slag = String(b[0].slice(b[1],b[2]))
                     .split(/\r\n\r\n|\n\n/)
                 ;
-                s.emit('data', Buffer(slag[slag.length-1]));
+                process.nextTick(function () {
+                    var b = slag[slag.length-1];
+                    if (b.length > 0) {
+                        s.emit('data', Buffer(b));
+                    }
+                });
             });
             
             var s = createStream();
