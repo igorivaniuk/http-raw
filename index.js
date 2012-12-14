@@ -57,12 +57,10 @@ function onconnection (con) {
                 var slag = String(b[0].slice(b[1],b[2]))
                     .split(/\r\n\r\n|\n\n/)
                 ;
-                process.nextTick(function () {
-                    var b = slag[slag.length-1];
-                    if (b.length > 0) {
-                        s.emit('data', Buffer(b));
-                    }
-                });
+                var b = slag[slag.length-1];
+                if (b.length > 0) {
+                    s.emit('data', Buffer(b));
+                }
             });
             
             var s = createStream();
@@ -77,9 +75,7 @@ function onconnection (con) {
         
         function createStream () {
             con.parser.onerror = function () {};
-            con.ondata = function (buf, start, end) {
-                s.emit('data', buf.slice(start, end));
-            };
+            con.ondata = function () {};
             
             incoming.upgradeOrConnect = true;
             incoming.upgrade = true;
@@ -101,8 +97,10 @@ function onconnection (con) {
             c.on('end', function () { s.emit('end') });
             c.on('close', function () { s.emit('close') });
             
-            c.on('error', function (err) {});
-            c.on('data', function (buf) { s.emit('data', buf) });
+            c.on('error', function (err) { s.emit('close') });
+            c.on('data', function (buf) {
+                s.emit('data', buf)
+            });
             
             return s;
         }
