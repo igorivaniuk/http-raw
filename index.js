@@ -16,7 +16,7 @@ function onconnection (con) {
     var ondata = con.ondata;
     con.ondata = function (buf, start, end) {
         buffers.push([ buf, start, end ]);
-        return ondata.apply(this, arguments);
+        if (!upgraded) return ondata.apply(this, arguments);
     };
     
     var onend = con.onend;
@@ -38,7 +38,7 @@ function onconnection (con) {
             process.nextTick(function () {
                 for (var i = 0; i < bufs.length; i++) {
                     var b = bufs[i];
-                    if (b[1] - b[2] > 0) {
+                    if (b[2] - b[1] > 0) {
                         s.emit('data', b[0].slice(b[1], b[2]));
                     }
                 }
