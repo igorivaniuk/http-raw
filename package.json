@@ -1,0 +1,35 @@
+{
+    "name" : "http-raw",
+    "version" : "0.0.0",
+    "description" : "expose the raw request data in an http server",
+    "main" : "index.js",
+    "directories" : {
+        "example" : "example",
+        "test" : "test"
+    },
+    "dependencies" : {},
+    "devDependencies" : {
+        "tap" : "~0.3.0",
+        "through" : "~2.1.0"
+    },
+    "scripts" : {
+        "test" : "tap test/*.js"
+    },
+    "repository" : {
+        "type" : "git",
+        "url" : "git://github.com/substack/http-raw.git"
+    },
+    "homepage" : "https://github.com/substack/http-raw",
+    "keywords" : [
+        "http",
+        "raw",
+        "server",
+        "proxy"
+    ],
+    "author" : {
+        "name" : "James Halliday",
+        "email" : "mail@substack.net",
+        "url" : "http://substack.net"
+    },
+    "license" : "MIT"
+}
