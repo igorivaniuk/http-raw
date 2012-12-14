@@ -17,7 +17,7 @@ server.listen(0);
 var port = server.address().port;
 
 server.on('listening', function () {
-    test('simple GET', { skip : true }, getTest);
+    test('simple GET', getTest);
     test('raw PUT', putTest);
     
     test(function (t) {
@@ -58,11 +58,9 @@ function putTest (t) {
     var c = net.connect(port);
     var data = '';
     c.on('data', function (buf) {
-console.dir(String(buf)); 
         data += buf;
     });
     c.on('end', function () {
-return;
         t.equal(data, 'HTTP/1.1 200 OK\r\n\r\nABC\nDEF\nH\nIJK');
     });
     
@@ -71,7 +69,11 @@ return;
         'Host: beep.boop',
         '',
         ''
-    ].join('\r\n') + 'abc\ndef\nh\n');
+    ].join('\r\n'));
+    
+    setTimeout(function () {
+        c.write('abc\ndef\nh\n');
+    }, 50);
     
     setTimeout(function () {
         c.end('ijk');
