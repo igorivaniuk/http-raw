@@ -2,6 +2,8 @@
 
 expose the raw request data in an http server
 
+[![build status](https://secure.travis-ci.org/substack/http-raw.png)](http://travis-ci.org/substack/http-raw)
+
 # example
 
 ``` js
