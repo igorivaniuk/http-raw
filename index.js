@@ -95,16 +95,19 @@ function onconnection (con) {
             
             c.on('drain', function () { s.emit('drain') });
             
-            var closed = false;
             c.on('end', function () {
                 s.emit('end');
-                if (!closed) s.emit('close');
-                closed = true;
+                close();
             });
-            c.on('close', function () {
-                if (!closed) s.emit('close');
+            c.on('close', close);
+            
+            var closed = false;
+            function close () {
+                if (closed) return;
+                s.emit('close');
                 closed = true;
-            });
+                incoming.destroy();
+            }
             
             c.on('error', function (err) { s.emit('close') });
             c.on('data', function (buf) {
