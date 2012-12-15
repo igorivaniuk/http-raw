@@ -32,12 +32,17 @@ var test = require('tap').test;
 var net = require('net');
 
 var server = createServer(function (req, res) {
-console.log(req.method);
     if (req.method === 'GET') {
         res.end('beep boop');
     }
     else {
         var rs = req.createRawBodyStream();
+        rs.write([
+            'HTTP/1.1 200 OK',
+            'Transfer-Encoding: chunked',
+            '',
+            ''
+        ].join('\r\n'));
         rs.pipe(upper()).pipe(rs);
     }
 });
@@ -67,7 +72,7 @@ function putTest (t) {
     t.plan(1);
     var r = request.put('https://localhost:' + port, function (err, res, body) {
         if (err) return t.fail(err);
-        t.equal(body, '4\r\nrawr\r\n0\r\n');
+        t.equal(body, 'RAWR');
     });
     r.end('rawr');
 }
