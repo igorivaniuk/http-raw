@@ -32,13 +32,21 @@ var test = require('tap').test;
 var net = require('net');
 
 var server = createServer(function (req, res) {
-    res.end('beep boop');
+console.log(req.method);
+    if (req.method === 'GET') {
+        res.end('beep boop');
+    }
+    else {
+        var rs = req.createRawBodyStream();
+        rs.pipe(upper()).pipe(rs);
+    }
 });
 server.listen(0);
 var port = server.address().port;
 
 server.on('listening', function () {
     test('simple GET', getTest);
+    test('raw PUT', putTest);
     
     test(function (t) {
         server.close();
@@ -52,5 +60,20 @@ function getTest (t) {
     request('https://localhost:' + port, function (err, res, body) {
         if (err) return t.fail(err);
         t.equal(body, 'beep boop');
+    });
+}
+
+function putTest (t) {
+    t.plan(1);
+    var r = request.put('https://localhost:' + port, function (err, res, body) {
+        if (err) return t.fail(err);
+        t.equal(body, '4\r\nrawr\r\n0\r\n');
+    });
+    r.end('rawr');
+}
+
+function upper () {
+    return through(function (buf) {
+        this.emit('data', String(buf).toUpperCase());
     });
 }
