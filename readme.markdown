@@ -59,8 +59,11 @@ events:
 
 ## var server = httpRaw(cb)
 
-Create a server like `http.createServer()` with a convenience `cb(req,res)`
-short-hand to listen on the `'request'` event.
+Create a new http server with extended raw stream functions.
+
+## var server = httpRaw.https(options, cb)
+
+Create a new https server with extended raw stream functions.
 
 ## var s = req.createRawStream()
 
