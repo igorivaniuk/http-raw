@@ -1,5 +1,3 @@
-var memwatch = require('memwatch');
-
 var httpRaw = require('../');
 var net = require('net');
 
