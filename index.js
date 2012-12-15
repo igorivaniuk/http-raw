@@ -94,8 +94,17 @@ function onconnection (con) {
             s.resume = c.resume.bind(c);
             
             c.on('drain', function () { s.emit('drain') });
-            c.on('end', function () { s.emit('end') });
-            c.on('close', function () { s.emit('close') });
+            
+            var closed = false;
+            c.on('end', function () {
+                s.emit('end');
+                if (!closed) s.emit('close');
+                closed = true;
+            });
+            c.on('close', function () {
+                if (!closed) s.emit('close');
+                closed = true;
+            });
             
             c.on('error', function (err) { s.emit('close') });
             c.on('data', function (buf) {
