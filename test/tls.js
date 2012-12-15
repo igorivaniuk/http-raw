@@ -22,16 +22,14 @@ var options = {
 
 var https = require('https');
 var httpRaw = require('../');
-var createServer = httpRaw.fromServer(function (cb) {
-    return https.createServer(options, cb);
-}, 'secureConnection');
+var createServer = httpRaw.https;
 var request = require('request');
 
 var through = require('through');
 var test = require('tap').test;
 var net = require('net');
 
-var server = createServer(function (req, res) {
+var server = createServer(options, function (req, res) {
     if (req.method === 'GET') {
         res.end('beep boop');
     }

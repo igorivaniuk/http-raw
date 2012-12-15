@@ -1,12 +1,15 @@
 var http = require('http');
+var https = require('https');
 var Stream = require('stream');
 
 exports = module.exports = fromServer(http.createServer);
-
+exports.http = fromServer(http.createServer);
+exports.https = fromServer(https.createServer, 'secureConnection');
 exports.fromServer = fromServer;
+
 function fromServer (Server, evName) {
-    return function (cb) {
-        var server = Server(cb);
+    return function () {
+        var server = Server.apply(this, arguments);
         server.on(evName || 'connection', onconnection);
         server.on('upgrade', function (req) {
             injectRaw(req.connection, req);
