@@ -33,7 +33,7 @@ function upgradeTest (t) {
             'HTTP/1.1 200 OK\r\n\r\n',
             'PUT / HTTP/1.1\r\n',
             'HOST: BEEP.BOOP\r\n',
-            'Upgrade: YES PLEASE\r\n',
+            'UPGRADE: YES PLEASE\r\n',
             '\r\n',
             'ABC\nDEF\nH\nIJK'
         ].join(''));
