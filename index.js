@@ -34,6 +34,7 @@ function onconnection (con) {
             
             var bufs = buffers;
             var s = createStream();
+            s.buffers = buffers;
             
             process.nextTick(function () {
                 for (var i = 0; i < bufs.length; i++) {
@@ -43,6 +44,7 @@ function onconnection (con) {
                     }
                 }
                 bufs = undefined;
+                s.buffers = undefined;
             });
             
             return s;
