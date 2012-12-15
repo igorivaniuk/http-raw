@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 var name = process.argv[2];
 
-var p0 = 7000, p1 = 7001;
+var p0 = 7500, p1 = 7501;
 
 var proxy = require('./' + name)(p1);
 proxy.listen(p0);
