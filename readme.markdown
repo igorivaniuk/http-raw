@@ -52,7 +52,10 @@ var createServer = require('http-raw')
 
 The http-raw api is exactly like the `http.createServer(cb)` api from core,
 except that 2 extra functions are available on the `req` objects from the
-`cb(req,res)` handler:
+[`'request'`](http://nodejs.org/docs/latest/api/http.html#http_event_request)
+and
+[`'upgrade'`](http://nodejs.org/docs/latest/api/http.html#http_event_upgrade)
+events:
 
 ## var s = req.createRawStream()
 
