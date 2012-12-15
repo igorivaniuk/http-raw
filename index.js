@@ -4,7 +4,9 @@ var Stream = require('stream');
 exports = module.exports = function (cb) {
     var server = http.createServer(cb);
     server.on('connection', onconnection);
-    server.on('upgrade', function () {});
+    server.on('upgrade', function (req) {
+        allowRaw(req.connection, req);
+    });
     return server;
 };
 
@@ -83,7 +85,9 @@ function allowRaw (con, incoming) {
     });
     
     function createStream () {
-        con.parser.onerror = function () {};
+        if (con.parser) {
+            con.parser.onerror = function () {};
+        }
         con.ondata = function () {};
         
         incoming.upgradeOrConnect = true;
