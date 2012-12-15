@@ -63,6 +63,9 @@ data beforehand.
 Writing to `s` goes through to the underlying network socket without any
 additional framing applied.
 
+To get all the data, `req.createRawStream()` must be fired on the same tick as
+the response callback.
+
 ## var s = req.createRawBodyStream()
 
 Return a readable/writable stream `s`. `s` will emit the raw data from after the
@@ -70,6 +73,9 @@ headers have been parsed, including any framing without doing any parsing.
 
 Writing to `s` goes through to the underlying network socket without any
 additional framing applied.
+
+To get all the data, `req.createRawBodyStream()` must be fired on the same tick
+as the response callback.
 
 # install
 
