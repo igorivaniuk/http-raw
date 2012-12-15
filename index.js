@@ -36,7 +36,7 @@ function onconnection (con) {
             var s = createStream();
             s.buffers = buffers;
             
-            process.nextTick(function () {
+            if (buffers) process.nextTick(function () {
                 for (var i = 0; i < bufs.length; i++) {
                     var b = bufs[i];
                     if (b[2] - b[1] > 0) {
@@ -54,7 +54,7 @@ function onconnection (con) {
             upgraded = true;
             
             var bufs = buffers;
-            process.nextTick(function () {
+            if (buffers) process.nextTick(function () {
                 var b = bufs[bufs.length-1];
                 var slag = String(b[0].slice(b[1],b[2]))
                     .split(/\r\n\r\n|\n\n/)
