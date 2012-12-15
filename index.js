@@ -1,16 +1,22 @@
 var http = require('http');
 var Stream = require('stream');
 
-exports = module.exports = function (cb) {
-    var server = http.createServer(cb);
-    server.on('connection', onconnection);
-    server.on('upgrade', function (req) {
-        allowRaw(req.connection, req);
-    });
-    return server;
-};
+exports = module.exports = fromServer(http.createServer);
+
+exports.fromServer = fromServer;
+function fromServer (Server, evName) {
+    return function (cb) {
+        var server = Server(cb);
+        server.on(evName || 'connection', onconnection);
+        server.on('upgrade', function (req) {
+            injectRaw(req.connection, req);
+        });
+        return server;
+    };
+}
 
 exports.onconnection = onconnection;
+exports.inject = injectRaw;
 
 function onconnection (con) {
     var buffers = con._rawBuffers = [];
@@ -30,12 +36,12 @@ function onconnection (con) {
     
     var onIncoming = con.parser.onIncoming;
     con.parser.onIncoming = function (incoming) {
-        allowRaw(con, incoming);
+        injectRaw(con, incoming);
         onIncoming.apply(this, arguments);
     };
 }
 
-function allowRaw (con, incoming) {
+function injectRaw (con, incoming) {
     var buffers = con._rawBuffers;
     
     incoming.createRawStream = function () {
