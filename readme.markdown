@@ -54,7 +54,7 @@ The http-raw api is exactly like the `http.createServer(cb)` api from core,
 except that 2 extra functions are available on the `req` objects from the
 `cb(req,res)` handler:
 
-## req.createRawStream()
+## var s = req.createRawStream()
 
 Return a readable/writable stream `s`. `s` will emit all the raw data from the
 connection, including the buffered header data without doing any parsing on the
@@ -65,6 +65,16 @@ additional framing applied.
 
 To get all the data, `req.createRawStream()` must be fired on the same tick as
 the response callback.
+
+On the same tick as the response handler, `s.buffers` will have all all the
+buffer slices formatted as an array where each element is an array:
+
+``` js
+[ buffer, start, end ]
+```
+
+On the next tick `s.buffers` gets set to undefined to it can be garbage
+collected.
 
 ## var s = req.createRawBodyStream()
 
