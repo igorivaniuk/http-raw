@@ -72,10 +72,19 @@ function injectRaw (con, incoming) {
         var bufs = buffers;
         if (buffers) process.nextTick(function () {
             var b = bufs[bufs.length-1];
-            var slag = String(b[0].slice(b[1],b[2]))
-                .split(/\r\n\r\n|\n\n/)
-            ;
-            var b = slag[slag.length-1];
+            var str = String(b[0].slice(b[1],b[2]))
+            
+            var ix = str.indexOf('\r\n\r\n');
+            if (ix >= 0) {
+                ix += 4
+            }
+            else {
+                ix = str.indexOf('\n\n');
+                if (ix < 0) return;
+                ix += 2;
+            }
+            
+            var b = str.slice(ix);
             if (b.length > 0) {
                 s.emit('data', Buffer(b));
             }
