@@ -127,8 +127,10 @@ function injectRaw (con, incoming) {
         c.on('drain', function () { s.emit('drain') });
         
         c.on('end', function () {
-            s.emit('end');
-            close();
+            setTimeout(function () {
+                s.emit('end');
+                close();
+            }, 100);
         });
         c.on('close', close);
         
@@ -142,7 +144,7 @@ function injectRaw (con, incoming) {
         
         c.on('error', function (err) { s.emit('close') });
         c.on('data', function (buf) {
-            s.emit('data', buf)
+            s.emit('data', buf);
         });
         
         return s;
