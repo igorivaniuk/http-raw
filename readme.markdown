@@ -15,9 +15,11 @@ var server = createServer(function (req, res) {
         res.end('beep boop\n');
     }
     else {
-        var bs = req.createRawBodyStream();
-        bs.write('HTTP/1.1 200 OK\r\n\r\n');
-        bs.pipe(upper()).pipe(bs)
+        var rs = req.createRawBodyStream();
+        var ws = res.createRawStream();
+        
+        ws.write('HTTP/1.1 200 OK\r\n\r\n');
+        rs.pipe(upper()).pipe(ws)
     }
 });
 server.listen(7000);
