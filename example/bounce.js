@@ -3,9 +3,10 @@ var http = require('http');
 var net = require('net');
 
 var server = createServer(function (req, res) {
-    var rs = req.createRawStream();
-    rs.pipe(process.stdout,{end:false});
-    rs.pipe(net.connect(7001)).pipe(rs);
+    req.createRawStream()
+        .pipe(net.connect(7001), { end : false })
+        .pipe(res.createRawStream())
+    ;
 });
 server.listen(7000);
 
