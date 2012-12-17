@@ -5,15 +5,10 @@ var http = require('http');
 var net = require('net');
 
 var server = createServer(function (req, res) {
-    var rs = req.createRawStream();
-    var c = net.connect(7001);
-    rs.pipe(c);
-    c.pipe(res);
-c.pipe(process.stdout, { end : false });
-    c.on('end', function () {
-        rs.end();
-        console.log('ended');
-    });
+    req.createRawStream()
+        .pipe(net.connect(7001))
+        .pipe(res.createRawStream())
+    ;
 });
 server.listen(0);
 var port = server.address().port;
