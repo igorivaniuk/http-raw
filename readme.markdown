@@ -53,11 +53,12 @@ var httpRaw = require('http-raw')
 ```
 
 The http-raw api is exactly like the `http.createServer(cb)` api from core,
-except that 2 extra functions are available on the `req` objects from the
+except for the extra functions documented below that get attached to the `req`
+and `res` objects in the
 [`'request'`](http://nodejs.org/docs/latest/api/http.html#http_event_request)
 and
 [`'upgrade'`](http://nodejs.org/docs/latest/api/http.html#http_event_upgrade)
-events:
+events.
 
 ## var server = httpRaw(cb)
 
@@ -67,14 +68,11 @@ Create a new http server with extended raw stream functions.
 
 Create a new https server with extended raw stream functions.
 
-## var s = req.createRawStream()
+## var rs = req.createRawStream()
 
-Return a readable/writable stream `s`. `s` will emit all the raw data from the
+Return a readable stream `rs`. `rs` will emit all the raw data from the
 connection, including the buffered header data without doing any parsing on the
 data beforehand.
-
-Writing to `s` goes through to the underlying network socket without any
-additional framing applied.
 
 To get all the data, `req.createRawStream()` must be fired on the same tick as
 the response callback.
@@ -89,13 +87,15 @@ buffer slices formatted as an array where each element is an array:
 On the next tick `s.buffers` gets set to undefined to it can be garbage
 collected.
 
-## var s = req.createRawBodyStream()
+## var ws = res.createRawStream()
 
-Return a readable/writable stream `s`. `s` will emit the raw data from after the
-headers have been parsed, including any framing without doing any parsing.
+Return a writable stream `ws` that will be written directly to the underlying
+network socket without any additional framing added.
 
-Writing to `s` goes through to the underlying network socket without any
-additional framing applied.
+## var bs = req.createRawBodyStream()
+
+Return a readable stream `bs` like the stream returned by
+`req.createRawStream()`, but only emit the raw body data, not the headers.
 
 To get all the data, `req.createRawBodyStream()` must be fired on the same tick
 as the response callback.
