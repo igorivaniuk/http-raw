@@ -3,8 +3,10 @@ var net = require('net');
 
 module.exports = function (port) {
     return httpRaw(function (req, res) {
-        var rs = req.createRawStream();
-        rs.pipe(net.connect(port)).pipe(rs);
+        req.createRawStream()
+            .pipe(net.connect(port), { end : false })
+            .pipe(res.createRawStream())
+        ;
     });
 };
 
