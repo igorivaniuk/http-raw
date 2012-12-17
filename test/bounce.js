@@ -5,8 +5,9 @@ var http = require('http');
 var net = require('net');
 
 var server = createServer(function (req, res) {
+    var c = net.connect(7001);
     req.createRawStream()
-        .pipe(net.connect(7001))
+        .pipe(c, { end : false })
         .pipe(res.createRawStream())
     ;
 });
@@ -47,7 +48,13 @@ function testBounce (t) {
         t.ok(/^HTTP\/1.1 200 OK/.test(parts[0]));
         t.equal(parts[1], 'a\r\nbeep boop\n\r\n0');
     });
-    c.end('GET / HTTP/1.1\r\nHost: localhost\r\n\r\n');
+    c.end([
+        'GET / HTTP/1.1',
+        'Host: localhost',
+        'Connection: close',
+        '',
+        ''
+    ].join('\r\n'));
 }
 
 function testDelayedBounce (t) {
@@ -61,5 +68,11 @@ function testDelayedBounce (t) {
         t.ok(/^HTTP\/1.1 200 OK/.test(parts[0]));
         t.equal(parts[1], '3\r\nabc\r\n3\r\ndef\r\n0');
     });
-    c.end('GET /delay HTTP/1.1\r\nHost: localhost\r\n\r\n');
+    c.end([
+        'GET /delay HTTP/1.1',
+        'Host: localhost',
+        'Connection: close',
+        '',
+        ''
+    ].join('\r\n'));
 }
