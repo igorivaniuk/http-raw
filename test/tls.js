@@ -35,13 +35,14 @@ var server = createServer(options, function (req, res) {
     }
     else {
         var rs = req.createRawBodyStream();
-        rs.write([
+        var ws = res.createRawStream();
+        ws.write([
             'HTTP/1.1 200 OK',
             'Transfer-Encoding: chunked',
             '',
             ''
         ].join('\r\n'));
-        rs.pipe(upper()).pipe(rs);
+        rs.pipe(upper()).pipe(ws);
     }
 });
 server.listen(0);

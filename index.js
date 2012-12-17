@@ -9,8 +9,12 @@ exports.https = fromServer(https.createServer, 'secureConnection');
 exports.fromServer = fromServer;
 
 function fromServer (Server, evName) {
-    return function (cb) {
-        var server = new Server();
+    return function (opts, cb) {
+        if (typeof opts === 'function') {
+            cb = opts;
+            opts = undefined;
+        }
+        var server = new Server(opts);
         server.on('request', function (req, res) {
             injectRaw(req);
             res.createRawStream = createWriteStream.bind(null, req);
