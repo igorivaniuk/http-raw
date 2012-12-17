@@ -1,6 +1,7 @@
 var http = require('http');
 var https = require('https');
-var createStream = require('./lib/create_stream');
+var createReadStream = require('./lib/read');
+var createWriteStream = require('./lib/write');
 
 exports = module.exports = fromServer(http.createServer);
 exports.http = fromServer(http.createServer);
@@ -8,18 +9,21 @@ exports.https = fromServer(https.createServer, 'secureConnection');
 exports.fromServer = fromServer;
 
 function fromServer (Server, evName) {
-    return function () {
-        var server = Server.apply(this, arguments);
+    return function (cb) {
+        var server = new Server();
+        server.on('request', function (req, res) {
+            injectRaw(req);
+            res.createRawStream = createWriteStream.bind(null, req);
+            if (cb) cb.apply(this, arguments);
+        });
+        
         server.on(evName || 'connection', onconnection);
         server.on('upgrade', function (req) {
-            injectRaw(req.connection, req);
+            injectRaw(req);
         });
         return server;
     };
 }
-
-exports.onconnection = onconnection;
-exports.inject = injectRaw;
 
 function onconnection (con) {
     var buffers = con._rawBuffers = [];
@@ -36,22 +40,16 @@ function onconnection (con) {
         con._rawBuffers = undefined;
         if (!con._upgraded) return onend.apply(this, arguments);
     };
-    
-    var onIncoming = con.parser.onIncoming;
-    con.parser.onIncoming = function (incoming) {
-        injectRaw(con, incoming);
-        onIncoming.apply(this, arguments);
-    };
 }
 
-function injectRaw (con, incoming) {
-    var buffers = con._rawBuffers;
+function injectRaw (req) {
+    var buffers = req.connection._rawBuffers;
     
-    incoming.createRawStream = function () {
-        con._upgraded = true;
+    req.createRawStream = function () {
+        req.connection._upgraded = true;
         
         var bufs = buffers;
-        var s = createStream(con, incoming);
+        var s = createReadStream(req);
         s.buffers = buffers;
         
         if (buffers) process.nextTick(function () {
@@ -63,14 +61,14 @@ function injectRaw (con, incoming) {
             }
             bufs = undefined;
             s.buffers = undefined;
-            con._rawBuffers = undefined;
+            req.connection._rawBuffers = undefined;
         });
         
         return s;
     };
     
-    incoming.createRawBodyStream = function () {
-        con._upgraded = true;
+    req.createRawBodyStream = function () {
+        req.connection._upgraded = true;
         
         var bufs = buffers;
         if (buffers) process.nextTick(function () {
@@ -93,13 +91,13 @@ function injectRaw (con, incoming) {
             }
         });
         
-        var s = createStream(con, incoming);
+        var s = createReadStream(req);
         return s;
     };
     
     process.nextTick(function () {
         buffers = undefined;
-        con._rawBuffers = undefined;
+        req.connection._rawBuffers = undefined;
     });
     
 }

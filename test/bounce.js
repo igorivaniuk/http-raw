@@ -6,7 +6,14 @@ var net = require('net');
 
 var server = createServer(function (req, res) {
     var rs = req.createRawStream();
-    rs.pipe(net.connect(7001)).pipe(rs);
+    var c = net.connect(7001);
+    rs.pipe(c);
+    c.pipe(res);
+c.pipe(process.stdout, { end : false });
+    c.on('end', function () {
+        rs.end();
+        console.log('ended');
+    });
 });
 server.listen(0);
 var port = server.address().port;
