@@ -4,10 +4,10 @@ var test = require('tap').test;
 var net = require('net');
 
 var server = createServer();
-server.on('upgrade', function (req) {
-    var bs = req.createRawStream();
-    bs.write('HTTP/1.1 200 OK\r\n\r\n');
-    bs.pipe(upper()).pipe(bs);
+server.on('upgrade', function (req, ws) {
+    var rs = req.createRawStream();
+    ws.write('HTTP/1.1 200 OK\r\n\r\n');
+    rs.pipe(upper()).pipe(ws);
 });
 server.listen(0);
 var port = server.address().port;
