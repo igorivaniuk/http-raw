@@ -77,12 +77,8 @@ data beforehand.
 To get all the data, `req.createRawStream()` must be fired on the same tick as
 the response callback.
 
-On the same tick as the response handler, `s.buffers` will have all all the
-buffer slices formatted as an array where each element is an array:
-
-``` js
-[ buffer, start, end ]
-```
+On the same tick as the response handler, `s.buffers` will contain an array of
+all the buffered data.
 
 On the next tick `s.buffers` gets set to undefined to it can be garbage
 collected.
