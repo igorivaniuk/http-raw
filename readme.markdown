@@ -74,6 +74,12 @@ Return a readable stream `rs`. `rs` will emit all the raw data from the
 connection, including the buffered header data without doing any parsing on the
 data beforehand.
 
+On the same tick as the response handler, `s.buffers` will contain an array of
+all the buffered data.
+
+On the next tick `s.buffers` gets set to undefined to it can be garbage
+collected.
+
 To get all the data, `req.createRawStream()` must be fired on the same tick as
 the response callback.
 

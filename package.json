@@ -1,6 +1,6 @@
 {
     "name" : "http-raw",
-    "version" : "2.0.1",
+    "version" : "2.1.0",
     "description" : "expose the raw request data in an http server",
     "main" : "index.js",
     "directories" : {
