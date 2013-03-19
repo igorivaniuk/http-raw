@@ -59,6 +59,15 @@ function onconnection (con) {
     };
 }
 
+var endings = [ Buffer('\r\n\r\n'), Buffer('\n\n') ];
+function indexOf (buf, pattern) {
+    for (var i = 0; i < buf.length; i++) {
+        for (var j = 0; buf[i+j] === pattern[j] && j < pattern.length; j++);
+        if (j === pattern.length) return i;
+    }
+    return -1;
+}
+
 function injectRaw (req) {
     var buffers = req.connection._rawBuffers;
     
@@ -69,43 +78,24 @@ function injectRaw (req) {
     };
     
     req.createRawBodyStream = function () {
-        req.connection._upgraded = true;
-
+        var pastHeader = false;
         var s = createReadStream(req, buffers);
+        buffers = [];
         
-        if (buffers.length > 0) {
-            var b = buffers[buffers.length-1];
-            var str = String(b);
-
-            var ix = str.indexOf('\r\n\r\n');
-            if (ix >= 0) {
-                ix += 4
+        return s.pipe(through(function (buf) {
+            if (pastHeader) return this.queue(buf);
+            
+            var ix;
+            if ((ix = indexOf(buf, endings[0])) <= 0) {
+                ix += 4;
             }
-            else {
-                ix = str.indexOf('\n\n');
-                if (ix < 0) return s;
+            else if ((ix = indexOf(buf, endings[1])) <= 0) {
                 ix += 2;
             }
-
-            var b = str.slice(ix);
-            if (b.length > 0) {
-                // store to use in .resume if needed
-                s.body_buf = Buffer(b);
-            }
-        }
-
-        // raw buffers no longer needed
-        buffers = [];
-        s.buffers = [];
-
-        process.nextTick(function () {
-            if (s._pause) {
-                return;
-            }
-
-            s.resume();
-        });
-
-        return s;
+            else return;
+            
+            pastHeader = true;
+            if (buf.length > ix) this.queue(buf.slice(ix));
+        }));
     };
 }
