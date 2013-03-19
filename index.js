@@ -2,6 +2,7 @@ var http = require('http');
 var https = require('https');
 var createReadStream = require('./lib/read');
 var createWriteStream = require('./lib/write');
+var through = require('through');
 
 exports = module.exports = fromServer(http.createServer);
 exports.http = fromServer(http.createServer);
@@ -64,17 +65,26 @@ function injectRaw (req) {
     req.createRawStream = function () {
         req.connection._upgraded = true;
         
-        var s = createReadStream(req);
-        s.buffers = buffers;
-
-        process.nextTick(function () {
-            if (s._pause) {
-                return;
-            }
-
-            s.resume();
-        });
+        var s = through();
+        s.pause();
+        buffers.forEach(s.queue.bind(s));
         
+        s.pause = (function () {
+            var pause = s.pause;
+            var paused = false;
+            
+            process.nextTick(function () {
+                if (!paused) s.resume();
+            });
+            
+            return function () {
+                paused = true;
+                return pause.apply(this, arguments);
+            };
+        })();
+        
+        req.connection.pipe(s);
+        s.buffers = buffers;
         return s;
     };
     
