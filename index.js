@@ -79,17 +79,17 @@ function injectRaw (req) {
     
     req.createRawBodyStream = function () {
         var pastHeader = false;
-        var s = createReadStream(req, buffers);
+        var s = createReadStream(req.connection, buffers);
         buffers = [];
         
         return s.pipe(through(function (buf) {
             if (pastHeader) return this.queue(buf);
             
             var ix;
-            if ((ix = indexOf(buf, endings[0])) <= 0) {
+            if ((ix = indexOf(buf, endings[0])) >= 0) {
                 ix += 4;
             }
-            else if ((ix = indexOf(buf, endings[1])) <= 0) {
+            else if ((ix = indexOf(buf, endings[1])) >= 0) {
                 ix += 2;
             }
             else return;
