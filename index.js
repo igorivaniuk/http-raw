@@ -63,35 +63,15 @@ function injectRaw (req) {
     var buffers = req.connection._rawBuffers;
     
     req.createRawStream = function () {
-        req.connection._upgraded = true;
-        
-        var s = through();
-        s.pause();
-        buffers.forEach(s.queue.bind(s));
-        
-        s.pause = (function () {
-            var pause = s.pause;
-            var paused = false;
-            
-            process.nextTick(function () {
-                if (!paused) s.resume();
-            });
-            
-            return function () {
-                paused = true;
-                return pause.apply(this, arguments);
-            };
-        })();
-        
-        req.connection.pipe(s);
-        s.buffers = buffers;
+        var s = createReadStream(req.connection, buffers);
+        buffers = [];
         return s;
     };
     
     req.createRawBodyStream = function () {
         req.connection._upgraded = true;
 
-        var s = createReadStream(req);
+        var s = createReadStream(req, buffers);
         
         if (buffers.length > 0) {
             var b = buffers[buffers.length-1];
