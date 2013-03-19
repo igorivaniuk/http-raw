@@ -77,12 +77,6 @@ data beforehand.
 To get all the data, `req.createRawStream()` must be fired on the same tick as
 the response callback.
 
-On the same tick as the response handler, `s.buffers` will contain an array of
-all the buffered data.
-
-On the next tick `s.buffers` gets set to undefined to it can be garbage
-collected.
-
 ## var ws = res.createRawStream()
 
 Return a writable stream `ws` that will be written directly to the underlying
